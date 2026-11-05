@@ -72,7 +72,7 @@ class _MainNavigationShellState extends State<MainNavigationShell>
     final screens = [
       const HomeScreenContent(),
       const SizedBox.shrink(), // Placeholder for Scan trigger
-      const AttendanceHistoryContent(),
+      const AttendanceHistoryScreen(),
       const AbsentContent(),
       const ProfileScreen(),
     ];

@@ -4,42 +4,42 @@ import 'package:flutter/material.dart';
 /// Crisp, sharp, pixel-perfect contrast without blurry fog
 abstract final class AttendanceColors {
   // Midnight Deep Dark Space (Solid & Crisp Minimalist)
-  static const page = Color(0xFF090D14);
-  static const darkSurface = Color(0xFF111722);
-  static const darkSurfaceElevated = Color(0xFF18202F);
-  static const darkBorder = Color(0x1FFFFFFF);
+  static const page = Color(0xFFE6E6E6);
+  static const darkSurface = Color(0xFF333333);
+  static const darkSurfaceElevated = Color(0xFF333333);
+  static const darkBorder = Color(0x22333333);
 
   // Soft/White Bottom Canvas
-  static const card = Colors.white;
-  static const softSurface = Color(0xFFF8FAFC);
-  static const surfaceBorder = Color(0xFFE2E8F0);
+  static const card = Color(0xFFE6E6E6);
+  static const softSurface = Color(0xFFD9D9D9);
+  static const surfaceBorder = Color(0xFFD0D0D0);
 
   // Vibrant Neo Accents (Clean Apple/Conceptzilla Blue)
-  static const accent = Color(0xFF2563EB);
-  static const accentCyan = Color(0xFF38BDF8);
-  static const accentPurple = Color(0xFF6366F1);
-  static const softAccent = Color(0xFFEFF6FF);
+  static const accent = Color(0xFF333333);
+  static const accentCyan = Color(0xFF333333);
+  static const accentPurple = Color(0xFF333333);
+  static const softAccent = Color(0xFFD9D9D9);
 
   // Crisp High-Contrast Typography Hierarchy
-  static const text = Color(0xFF0F172A);
-  static const secondaryText = Color(0xFF64748B);
-  static const textMuted = Color(0xFF94A3B8);
+  static const text = Color(0xFF171717);
+  static const secondaryText = Color(0xFF333333);
+  static const textMuted = Color(0xFF666666);
 
   // Status Colors
-  static const success = Color(0xFF10B981);
-  static const warning = Color(0xFFF59E0B);
-  static const error = Color(0xFFEF4444);
-  static const divider = Color(0xFFF1F5F9);
+  static const success = Color(0xFF333333);
+  static const warning = Color(0xFF333333);
+  static const error = Color(0xFF333333);
+  static const divider = Color(0xFFD0D0D0);
 
   // Ultra-Clean Minimalist Header Gradient (Smooth, crisp, no blur)
   static const LinearGradient neoAuroraGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
-      Color(0xFF3B82F6),
-      Color(0xFF1D4ED8),
-      Color(0xFF0F172A),
-      Color(0xFF090D14),
+      Color(0xFF333333),
+      Color(0xFF333333),
+      Color(0xFF333333),
+      Color(0xFF333333),
     ],
     stops: [0.0, 0.35, 0.75, 1.0],
   );
@@ -48,9 +48,9 @@ abstract final class AttendanceColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF3B82F6),
-      Color(0xFF1D4ED8),
-      Color(0xFF0F172A),
+      Color(0xFF333333),
+      Color(0xFF333333),
+      Color(0xFF333333),
     ],
   );
 }
@@ -65,8 +65,8 @@ abstract final class AttendanceSpacing {
 }
 
 abstract final class AttendanceRadius {
-  static const card = 28.0;
-  static const compact = 18.0;
+  static const card = 18.0;
+  static const compact = 16.0;
   static const pill = 100.0;
 }
 
@@ -163,23 +163,24 @@ abstract final class AttendanceTheme {
         },
       ),
       colorScheme: const ColorScheme(
-        brightness: Brightness.dark,
-        primary: AttendanceColors.accent,
+      brightness: Brightness.light,
+        primary: AttendanceColors.text,
         onPrimary: Colors.white,
-        secondary: AttendanceColors.success,
+        secondary: AttendanceColors.secondaryText,
         onSecondary: Colors.white,
         error: AttendanceColors.error,
         onError: Colors.white,
-        surface: AttendanceColors.darkSurface,
-        onSurface: Colors.white,
+        surface: AttendanceColors.page,
+        onSurface: AttendanceColors.text,
       ),
       textTheme: attendanceTextTheme,
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
+          backgroundColor: AttendanceColors.page,
           foregroundColor: AttendanceColors.text,
-          elevation: 0,
-          shape: const StadiumBorder(),
+          elevation: 2,
+          shadowColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
       snackBarTheme: const SnackBarThemeData(
@@ -279,7 +280,10 @@ class AttendanceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
         border: customBorder ??
             (borderColor == null ? null : Border.all(color: borderColor!)),
-        boxShadow: shadows,
+        boxShadow: shadows ?? const [
+          BoxShadow(color: Colors.white, blurRadius: 10, offset: Offset(-4, -4)),
+          BoxShadow(color: Color(0xFFBEBEBE), blurRadius: 10, offset: Offset(4, 4)),
+        ],
       ),
       child: child,
     );
@@ -308,7 +312,7 @@ class AttendancePrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? Colors.white;
+    final bg = backgroundColor ?? AttendanceColors.page;
     final fg = foregroundColor ?? AttendanceColors.text;
 
     return SizedBox(
@@ -318,7 +322,8 @@ class AttendancePrimaryButton extends StatelessWidget {
           padding: padding,
           backgroundColor: bg,
           foregroundColor: fg,
-          elevation: 0,
+          elevation: 2,
+          shadowColor: const Color(0xFFBEBEBE),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AttendanceRadius.pill),
           ),
@@ -410,12 +415,12 @@ class AttendanceBottomNavigation extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 16),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+          color: AttendanceColors.page,
         borderRadius: BorderRadius.circular(AttendanceRadius.pill),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+        border: Border.all(color: AttendanceColors.surfaceBorder, width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+            color: const Color(0xFF333333).withValues(alpha: 0.12),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),

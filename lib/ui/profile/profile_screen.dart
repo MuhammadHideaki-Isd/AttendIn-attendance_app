@@ -453,7 +453,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       label: 'Full Name',
                                       controller: _nameController,
                                       icon: Icons.person_outline_rounded,
-                                      accentColor: const Color(0xFF6366F1),
+                                      accentColor: AttendanceColors.secondaryText,
                                     ),
                                     const SizedBox(height: 16),
 
@@ -461,7 +461,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       label: 'Employee / Badge ID',
                                       controller: _idController,
                                       icon: Icons.badge_outlined,
-                                      accentColor: const Color(0xFF0EA5E9),
+                                      accentColor: AttendanceColors.secondaryText,
                                     ),
                                     const SizedBox(height: 16),
 
@@ -469,7 +469,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       label: 'Job Title / Role',
                                       controller: _roleController,
                                       icon: Icons.work_outline_rounded,
-                                      accentColor: const Color(0xFFF59E0B),
+                                      accentColor: AttendanceColors.secondaryText,
                                     ),
                                     const SizedBox(height: 16),
 
@@ -478,7 +478,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       label: 'Department',
                                       controller: _deptController,
                                       icon: Icons.business_outlined,
-                                      accentColor: const Color(0xFF10B981),
+                                      accentColor: AttendanceColors.secondaryText,
                                     ),
                                     const SizedBox(height: 24),
 

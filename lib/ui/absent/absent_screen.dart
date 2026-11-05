@@ -10,7 +10,7 @@ class AbsentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFF070B12),
+      backgroundColor: AttendanceColors.page,
       body: AbsentContent(),
     );
   }
@@ -52,25 +52,25 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
       title: 'Sick Leave',
       subtitle: 'Medical rest or medical recovery',
       icon: Icons.healing_rounded,
-      accent: Color(0xFF38BDF8),
+      accent: AttendanceColors.secondaryText,
     ),
     _CategoryData(
       title: 'Annual Leave',
       subtitle: 'Personal time off & annual holidays',
       icon: Icons.beach_access_rounded,
-      accent: Color(0xFF34D399),
+      accent: AttendanceColors.secondaryText,
     ),
     _CategoryData(
       title: 'Emergency / Permit',
       subtitle: 'Urgent family or personal affairs',
       icon: Icons.priority_high_rounded,
-      accent: Color(0xFFFBBF24),
+      accent: AttendanceColors.secondaryText,
     ),
     _CategoryData(
       title: 'Work From Home',
       subtitle: 'Remote work assignment approval',
       icon: Icons.home_work_rounded,
-      accent: Color(0xFFA78BFA),
+      accent: AttendanceColors.secondaryText,
     ),
   ];
 
@@ -115,13 +115,13 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF2563EB),
+              primary: AttendanceColors.text,
               onPrimary: Colors.white,
-              surface: Color(0xFF131B2A),
+              surface: AttendanceColors.darkSurface,
               onSurface: Colors.white,
             ),
             dialogTheme: const DialogThemeData(
-              backgroundColor: Color(0xFF131B2A),
+              backgroundColor: AttendanceColors.darkSurface,
             ),
           ),
           child: child!,
@@ -157,7 +157,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
       status: 'Submitted',
       type: 'leave',
       createdAt: now,
-      location: 'Online â€¢ ${profile.name}',
+      location: 'Online Ã¢â‚¬Â¢ ${profile.name}',
       note: reason,
     );
 
@@ -201,10 +201,10 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
             width: MediaQuery.of(ctx).size.width * 0.85,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF141B2D),
+              color: AttendanceColors.softSurface,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: isSuccess ? const Color(0xFF10B981).withValues(alpha: 0.3) : const Color(0xFFEF4444).withValues(alpha: 0.3),
+                color: isSuccess ? AttendanceColors.secondaryText.withValues(alpha: 0.3) : AttendanceColors.text.withValues(alpha: 0.3),
               ),
               boxShadow: [
                 BoxShadow(
@@ -222,13 +222,13 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                   height: 56,
                   decoration: BoxDecoration(
                     color: isSuccess
-                        ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                        : const Color(0xFFEF4444).withValues(alpha: 0.15),
+                        ? AttendanceColors.secondaryText.withValues(alpha: 0.15)
+                        : AttendanceColors.text.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     isSuccess ? Icons.check_circle_rounded : Icons.warning_rounded,
-                    color: isSuccess ? const Color(0xFF34D399) : const Color(0xFFF87171),
+                    color: isSuccess ? AttendanceColors.secondaryText : AttendanceColors.secondaryText,
                     size: 30,
                   ),
                 ),
@@ -258,7 +258,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                     onPressed: () => Navigator.pop(ctx),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF0F172A),
+                      foregroundColor: AttendanceColors.text,
                       padding: const EdgeInsets.symmetric(vertical: 13),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -352,7 +352,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                             width: 6,
                             height: 6,
                             decoration: const BoxDecoration(
-                              color: Color(0xFF34D399),
+                              color: AttendanceColors.secondaryText,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -447,7 +447,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                           margin: const EdgeInsets.only(bottom: 10),
                                           padding: const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
-                                            color: isSelected ? const Color(0xFF0F172A) : AttendanceColors.softSurface,
+                                            color: isSelected ? AttendanceColors.text : AttendanceColors.softSurface,
                                             borderRadius: BorderRadius.circular(18),
                                             border: Border.all(
                                               color: isSelected ? Colors.transparent : AttendanceColors.surfaceBorder,
@@ -509,7 +509,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                                 child: isSelected
                                                     ? const Icon(
                                                         Icons.check_rounded,
-                                                        color: Color(0xFF0F172A),
+                                                        color: AttendanceColors.text,
                                                         size: 13,
                                                       )
                                                     : null,

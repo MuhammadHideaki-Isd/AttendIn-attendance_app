@@ -300,7 +300,7 @@ class _AttendScreenState extends State<AttendScreen>
   }
 
   /// Ambil snapshot kecil tiap 5 detik dan minta Gemini mengecek
-  /// apakah wajah asli masih ada di frame — indikator realtime.
+  /// apakah wajah asli masih ada di frame â€” indikator realtime.
   Future<void> _pollLiveFace() async {
     if (!kIsWeb || _isPollingLive || _isVerifying || _isSubmitting) return;
     final controller = _cameraController;
@@ -322,7 +322,7 @@ class _AttendScreenState extends State<AttendScreen>
         setState(() {
           _faceDetected = detected;
           _verificationMessage = detected
-              ? 'Live face detected • Gemini monitoring frame'
+              ? 'Live face detected â€¢ Gemini monitoring frame'
               : 'No face detected in frame.';
         });
       }
@@ -488,12 +488,12 @@ class _AttendScreenState extends State<AttendScreen>
             width: MediaQuery.of(ctx).size.width * 0.85,
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: const Color(0xFF141B2D),
+              color: AttendanceColors.softSurface,
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: Colors.amber.withValues(alpha: 0.35), width: 1.5),
+              border: Border.all(color: AttendanceColors.secondaryText.withValues(alpha: 0.35), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.amber.withValues(alpha: 0.08),
+                  color: AttendanceColors.secondaryText.withValues(alpha: 0.08),
                   blurRadius: 60,
                   spreadRadius: 2,
                 ),
@@ -522,13 +522,13 @@ class _AttendScreenState extends State<AttendScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Colors.amber.withValues(alpha: 0.2),
-                          Colors.orange.withValues(alpha: 0.1),
+                          AttendanceColors.secondaryText.withValues(alpha: 0.2),
+                          AttendanceColors.secondaryText.withValues(alpha: 0.1),
                         ],
                       ),
-                      border: Border.all(color: Colors.amber.withValues(alpha: 0.6), width: 2.5),
+                      border: Border.all(color: AttendanceColors.secondaryText.withValues(alpha: 0.6), width: 2.5),
                     ),
-                    child: const Icon(Icons.face_retouching_off_rounded, color: Colors.amber, size: 40),
+                    child: const Icon(Icons.face_retouching_off_rounded, color: AttendanceColors.secondaryText, size: 40),
                   ),
                 ),
                 const SizedBox(height: 22),
@@ -591,7 +591,7 @@ class _AttendScreenState extends State<AttendScreen>
   Widget _buildTipRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.amber.withValues(alpha: 0.8)),
+        Icon(icon, size: 16, color: AttendanceColors.secondaryText.withValues(alpha: 0.8)),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -709,7 +709,7 @@ class _AttendScreenState extends State<AttendScreen>
         );
 
         detected = result.faceDetected && result.confidence >= 0.35;
-        _matchEngineSource = 'Gemini Vision • ${result.model}';
+        _matchEngineSource = 'Gemini Vision â€¢ ${result.model}';
 
         if (!mounted) return;
         if (!detected) {
@@ -736,7 +736,7 @@ class _AttendScreenState extends State<AttendScreen>
       setState(() {
         _faceDetected = true;
         _faceVerified = true;
-        _verificationMessage = 'Face Verified • ${(_matchConfidence * 100).toStringAsFixed(0)}%';
+        _verificationMessage = 'Face Verified â€¢ ${(_matchConfidence * 100).toStringAsFixed(0)}%';
       });
 
       _successBounceController.forward(from: 0);
@@ -824,7 +824,7 @@ class _AttendScreenState extends State<AttendScreen>
             constraints: const BoxConstraints(maxWidth: 420),
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: const Color(0xFF141B2D),
+              color: AttendanceColors.softSurface,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
                 color: AttendanceColors.accentCyan.withValues(alpha: 0.35),
@@ -1127,7 +1127,7 @@ class _AttendScreenState extends State<AttendScreen>
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070B12),
+      backgroundColor: AttendanceColors.page,
       body: Stack(
         children: [
           // Subtle top gradient (crisp, no blur)
@@ -1142,9 +1142,9 @@ class _AttendScreenState extends State<AttendScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFF1A2744),
-                    Color(0xFF0D1420),
-                    Color(0xFF070B12),
+                    AttendanceColors.darkSurface,
+                    AttendanceColors.darkSurface,
+                    AttendanceColors.page,
                   ],
                   stops: [0.0, 0.6, 1.0],
                 ),
@@ -1305,7 +1305,7 @@ class _AttendScreenState extends State<AttendScreen>
   Widget _buildViewfinder(double screenWidth) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1623),
+        color: AttendanceColors.darkSurface,
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
           color: _faceDetected
@@ -1370,7 +1370,7 @@ class _AttendScreenState extends State<AttendScreen>
               },
             ),
 
-            // 3. Top info pill — face detection status
+            // 3. Top info pill â€” face detection status
             Positioned(
               top: 16,
               left: 16,
@@ -1567,7 +1567,7 @@ class _AttendScreenState extends State<AttendScreen>
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                _faceVerified ? 'Face Verified ✓' : 'Scan Face',
+                                _faceVerified ? 'Face Verified âœ“' : 'Scan Face',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
@@ -1640,8 +1640,8 @@ class _AttendScreenState extends State<AttendScreen>
           // Footer label
           Text(
             kIsWeb
-                ? 'Cloud AI Face Detection • Gemini Vision'
-                : 'On-Device Face Detection · Data stays private',
+                ? 'Cloud AI Face Detection â€¢ Gemini Vision'
+                : 'On-Device Face Detection Â· Data stays private',
             style: TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w600,
@@ -1682,7 +1682,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
     final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(40));
 
     // === Dark vignette outside face frame (crisp, no blur) ===
-    final vignettePaint = Paint()..color = const Color(0xFF070B12).withValues(alpha: 0.45);
+    final vignettePaint = Paint()..color = AttendanceColors.page.withValues(alpha: 0.45);
     final vignettePath = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
       ..addRRect(rrect)
@@ -1691,8 +1691,8 @@ class _PremiumScanOverlayPainter extends CustomPainter {
 
     // === Main frame border ===
     final Color frameColor = verified
-        ? const Color(0xFF10B981)
-        : (isScanning ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.25));
+        ? AttendanceColors.secondaryText
+        : (isScanning ? AttendanceColors.secondaryText : Colors.white.withValues(alpha: 0.25));
     final framePaint = Paint()
       ..color = frameColor.withValues(alpha: verified ? 0.8 : (isScanning ? 0.6 : 0.25))
       ..strokeWidth = verified ? 2.5 : 1.5
@@ -1700,7 +1700,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
     canvas.drawRRect(rrect, framePaint);
 
     // === Corner bracket accents ===
-    final cornerColor = verified ? const Color(0xFF10B981) : const Color(0xFF38BDF8);
+    final cornerColor = verified ? AttendanceColors.secondaryText : AttendanceColors.secondaryText;
     final cornerPaint = Paint()
       ..color = cornerColor
       ..strokeWidth = 3.5
@@ -1732,9 +1732,9 @@ class _PremiumScanOverlayPainter extends CustomPainter {
         ..shader = const LinearGradient(
           colors: [
             Colors.transparent,
-            Color(0xFF38BDF8),
+            AttendanceColors.secondaryText,
             Colors.white,
-            Color(0xFF38BDF8),
+            AttendanceColors.secondaryText,
             Colors.transparent,
           ],
           stops: [0.0, 0.25, 0.5, 0.75, 1.0],
@@ -1750,7 +1750,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
 
       // Soft trailing glow behind the laser
       final scanGlowPaint = Paint()
-        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.22)
+        ..color = AttendanceColors.secondaryText.withValues(alpha: 0.22)
         ..strokeWidth = 6.0
         ..style = PaintingStyle.stroke;
 
@@ -1769,8 +1769,8 @@ class _PremiumScanOverlayPainter extends CustomPainter {
 
       final arcPaint = Paint()
         ..color = isScanning
-            ? const Color(0xFF38BDF8).withValues(alpha: 0.8)
-            : const Color(0xFF60A5FA).withValues(alpha: 0.2)
+            ? AttendanceColors.secondaryText.withValues(alpha: 0.8)
+            : AttendanceColors.secondaryText.withValues(alpha: 0.2)
         ..strokeWidth = isScanning ? 2.5 : 1.2
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
@@ -1787,7 +1787,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
           pi,
           pi * 0.5,
           false,
-          arcPaint..color = const Color(0xFF38BDF8).withValues(alpha: 0.45),
+          arcPaint..color = AttendanceColors.secondaryText.withValues(alpha: 0.45),
         );
       }
       canvas.restore();
@@ -1801,7 +1801,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
         Radius.circular(40 + pulseExpansion),
       );
       final pulsePaint = Paint()
-        ..color = (isScanning ? const Color(0xFF38BDF8) : Colors.white)
+        ..color = (isScanning ? AttendanceColors.secondaryText : Colors.white)
             .withValues(alpha: (0.12 - pulseValue * 0.08).clamp(0.02, 0.12))
         ..strokeWidth = 1.0
         ..style = PaintingStyle.stroke;
@@ -1811,7 +1811,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
     // === Glow effect during verification ===
     if (glowIntensity > 0 && isScanning) {
       final glowPaint = Paint()
-        ..color = const Color(0xFF38BDF8).withValues(alpha: glowIntensity * 0.15)
+        ..color = AttendanceColors.secondaryText.withValues(alpha: glowIntensity * 0.15)
         ..strokeWidth = 3.5
         ..style = PaintingStyle.stroke;
       canvas.drawRRect(rrect.inflate(2), glowPaint);
@@ -1824,7 +1824,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
         const Radius.circular(43),
       );
       final successPaint = Paint()
-        ..color = const Color(0xFF10B981).withValues(alpha: 0.25)
+        ..color = AttendanceColors.secondaryText.withValues(alpha: 0.25)
         ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
       canvas.drawRRect(successRRect, successPaint);
@@ -2003,7 +2003,7 @@ class _SuccessAttendanceDialogState extends State<_SuccessAttendanceDialog>
       width: MediaQuery.of(context).size.width * 0.88,
       padding: const EdgeInsets.all(30),
       decoration: BoxDecoration(
-        color: const Color(0xFF141B2D),
+        color: AttendanceColors.softSurface,
         borderRadius: BorderRadius.circular(36),
         border: Border.all(color: AttendanceColors.success.withValues(alpha: 0.2)),
         boxShadow: [
@@ -2091,7 +2091,7 @@ class _SuccessAttendanceDialogState extends State<_SuccessAttendanceDialog>
           ),
           const SizedBox(height: 8),
           Text(
-            DateFormat('EEEE, d MMMM yyyy • HH:mm:ss').format(widget.timestamp),
+            DateFormat('EEEE, d MMMM yyyy â€¢ HH:mm:ss').format(widget.timestamp),
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.6),
