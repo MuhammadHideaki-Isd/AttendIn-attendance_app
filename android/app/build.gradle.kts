@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.attendance_app_deki"
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
