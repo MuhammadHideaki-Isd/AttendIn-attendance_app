@@ -2,17 +2,38 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/intl.dart';
 
 import '../attendance_design.dart';
+import '../../services/attendance_store.dart';
 
-
-class AttendanceHistoryScreen extends StatelessWidget {
+class AttendanceHistoryScreen extends StatefulWidget {
   const AttendanceHistoryScreen({super.key});
+
+  @override
+  State<AttendanceHistoryScreen> createState() => _AttendanceHistoryScreenState();
+}
+
+class _LocalHistory {
+  final List<AttendanceRecord> records;
+  final UserProfile profile;
+
+  const _LocalHistory(this.records, this.profile);
+}
+
+class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
+  late final Future<_LocalHistory> _localHistory = _loadLocalHistory();
+
+  Future<_LocalHistory> _loadLocalHistory() async {
+    final recordsFuture = AttendanceStore.load();
+    final profileFuture = AttendanceStore.loadProfile();
+    return _LocalHistory(await recordsFuture, await profileFuture);
+  }
 
   // Mengambil data dari collection Firestore
   final String collectionName = 'attendance';
 
-  CollectionReference get dataCollection =>
+  CollectionReference<Map<String, dynamic>> get dataCollection =>
       FirebaseFirestore.instance.collection(collectionName);
 
   // Membuat card riwayat
@@ -129,7 +150,7 @@ class AttendanceHistoryScreen extends StatelessWidget {
                 'ID: $docId',
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.grey.shade500,
+                  color: AttendanceColors.textMuted,
                 ),
               ),
             ),
@@ -151,7 +172,7 @@ class AttendanceHistoryScreen extends StatelessWidget {
         Icon(
           icon,
           size: 18,
-          color: Colors.grey.shade600,
+          color: AttendanceColors.textMuted,
         ),
         const SizedBox(width: 10),
         SizedBox(
@@ -170,6 +191,68 @@ class AttendanceHistoryScreen extends StatelessWidget {
     );
   }
 
+  DateTime _createdAt(Map<String, dynamic> data) {
+    final value = data['created_at'];
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    return DateTime.tryParse(data['datetime']?.toString() ?? '') ??
+        DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
+  List<Map<String, dynamic>> _mergeRecords(
+    _LocalHistory local,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> cloudDocs,
+  ) {
+    final entries = <String, Map<String, dynamic>>{};
+    for (final record in local.records) {
+      entries[record.id] = {
+        '_docId': record.id,
+        'name': local.profile.name,
+        'address': record.location,
+        'description': record.note.isEmpty
+            ? record.title
+            : '${record.title}: ${record.note}',
+        'datetime': DateFormat('dd MMM yyyy, HH:mm').format(record.createdAt),
+        'created_at': record.createdAt,
+        'type': record.type == 'leave' ? 'permission' : 'attendance',
+      };
+    }
+    for (final doc in cloudDocs) {
+      entries[doc.id] = {'_docId': doc.id, ...doc.data()};
+    }
+    final result = entries.values.toList()
+      ..sort((a, b) => _createdAt(b).compareTo(_createdAt(a)));
+    return result;
+  }
+
+  Widget _buildRecords(
+    _LocalHistory local, {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> cloudDocs = const [],
+    String? errorMessage,
+  }) {
+    final records = _mergeRecords(local, cloudDocs);
+    if (records.isEmpty) {
+      return Center(
+        child: Text(errorMessage ?? 'Belum ada riwayat presensi'),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: records.length,
+      itemBuilder: (context, index) {
+        final data = records[index];
+        return _buildAttendanceCard(
+          data['_docId']?.toString() ?? '-',
+          data['name']?.toString() ?? local.profile.name,
+          data['address']?.toString() ?? '-',
+          data['description']?.toString() ?? '-',
+          data['datetime']?.toString() ?? '-',
+          data['type']?.toString() ?? 'attendance',
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,94 +260,36 @@ class AttendanceHistoryScreen extends StatelessWidget {
         title: const Text('Attendance History'),
         centerTitle: true,
       ),
-      body: Firebase.apps.isEmpty
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'Firebase belum dikonfigurasi untuk platform ini. '
-                  'Daftarkan aplikasi Web melalui FlutterFire CLI, lalu '
-                  'inisialisasi Firebase dengan FirebaseOptions.',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            )
-          : StreamBuilder<QuerySnapshot>(
-              stream: dataCollection.snapshots(),
-              builder: (context, snapshot) {
-          // Loading
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+      body: FutureBuilder<_LocalHistory>(
+        future: _localHistory,
+        builder: (context, localSnapshot) {
+          if (!localSnapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
           }
+          final local = localSnapshot.data!;
+          if (Firebase.apps.isEmpty) return _buildRecords(local);
 
-          // Error
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text(
-                'Terjadi kesalahan saat mengambil data.',
-              ),
-            );
-          }
-
-          // Data kosong
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text('Belum ada riwayat presensi'),
-            );
-          }
-
-          // Mengurutkan data berdasarkan created_at
-          final docs = List<QueryDocumentSnapshot>.from(
-            snapshot.data!.docs,
-          );
-
-          docs.sort((a, b) {
-            final dataA = a.data() as Map<String, dynamic>;
-            final dataB = b.data() as Map<String, dynamic>;
-
-            final timeA = dataA['created_at'];
-            final timeB = dataB['created_at'];
-
-            if (timeA is Timestamp && timeB is Timestamp) {
-              return timeB.compareTo(timeA);
-            }
-
-            if (timeA is Timestamp) return -1;
-            if (timeB is Timestamp) return 1;
-
-            return 0;
-          });
-
-          // Menampilkan daftar riwayat
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data =
-                  docs[index].data() as Map<String, dynamic>;
-
-              final docId = docs[index].id;
-              final name = data['name']?.toString() ?? 'Unknown';
-              final address = data['address']?.toString() ?? '-';
-              final description =
-                  data['description']?.toString() ?? '-';
-              final datetime = data['datetime']?.toString() ?? '-';
-              final type = data['type']?.toString() ?? 'attendance';
-
-              return _buildAttendanceCard(
-                docId,
-                name,
-                address,
-                description,
-                datetime,
-                type,
+          return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: dataCollection.snapshots(),
+            builder: (context, cloudSnapshot) {
+              if (cloudSnapshot.hasError) {
+                return _buildRecords(
+                  local,
+                  errorMessage: 'Firebase tidak tersedia. Menampilkan data lokal.',
+                );
+              }
+              if (cloudSnapshot.connectionState == ConnectionState.waiting &&
+                  local.records.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return _buildRecords(
+                local,
+                cloudDocs: cloudSnapshot.data?.docs ?? const [],
               );
             },
           );
-              },
-            ),
+        },
+      ),
     );
   }
 }

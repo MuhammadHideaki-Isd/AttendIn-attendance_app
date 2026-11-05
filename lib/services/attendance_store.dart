@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AttendanceAddResult {
@@ -124,6 +128,7 @@ class AttendanceRecord {
 class AttendanceStore {
   static const _key = 'attendance_records_v1';
   static const _profileKey = 'user_profile_v1';
+  static const _pendingSyncKey = 'attendance_pending_cloud_sync_v1';
 
   /// Load user profile with safe defaults and robust exception handling
   static Future<UserProfile> loadProfile() async {
@@ -181,69 +186,6 @@ class AttendanceStore {
       } catch (_) {}
     }
 
-    // Populate with demo records on fresh install if empty
-    if (records.isEmpty) {
-      final now = DateTime.now();
-      records.addAll([
-        AttendanceRecord(
-          id: '1',
-          title: 'Check In',
-          status: 'On Time',
-          type: 'check_in',
-          createdAt: DateTime(now.year, now.month, now.day - 3, 8, 45),
-          location: 'Cyber 2 Tower, Kuningan, Jakarta Selatan',
-          note: 'Biometric Face Match: 98.4%',
-          biometricConfidence: 0.984,
-          verificationBadge: 'Verified L1',
-        ),
-        AttendanceRecord(
-          id: '2',
-          title: 'Break',
-          status: 'Completed',
-          type: 'break',
-          createdAt: DateTime(now.year, now.month, now.day - 3, 12, 10),
-          location: 'Cyber 2 Tower, Kuningan, Jakarta Selatan',
-          note: 'Lunch break verified',
-          biometricConfidence: 0.975,
-          verificationBadge: 'Verified',
-        ),
-        AttendanceRecord(
-          id: '3',
-          title: 'Check In',
-          status: 'On Time',
-          type: 'check_in',
-          createdAt: DateTime(now.year, now.month, now.day - 1, 8, 52),
-          location: 'Cyber 2 Tower, Kuningan, Jakarta Selatan',
-          note: 'Biometric Face Match: 99.1%',
-          biometricConfidence: 0.991,
-          verificationBadge: 'Verified L1',
-        ),
-        AttendanceRecord(
-          id: '4',
-          title: 'Check Out',
-          status: 'Completed',
-          type: 'check_out',
-          createdAt: DateTime(now.year, now.month, now.day - 1, 18, 05),
-          location: 'Cyber 2 Tower, Kuningan, Jakarta Selatan',
-          note: 'Daily checkout confirmed',
-          biometricConfidence: 0.988,
-          verificationBadge: 'Verified L1',
-        ),
-        AttendanceRecord(
-          id: '5',
-          title: 'Work From Home',
-          status: 'Approved',
-          type: 'leave',
-          createdAt: DateTime(now.year, now.month, now.day - 2, 9, 00),
-          location: 'Remote Work • Verified IP',
-          note: 'Sprint Planning & Architecture Review',
-          biometricConfidence: 1.0,
-          verificationBadge: 'Authorized',
-        ),
-      ]);
-      await save(records);
-    }
-
     records.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return records;
   }
@@ -263,7 +205,74 @@ class AttendanceStore {
   static Future<void> add(AttendanceRecord record) async {
     final records = await load();
     records.insert(0, record);
+    await _saveAndQueueSync(records, record);
+  }
+
+  static Future<void> _saveAndQueueSync(
+    List<AttendanceRecord> records,
+    AttendanceRecord newRecord,
+  ) async {
     await save(records);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pendingIds = prefs.getStringList(_pendingSyncKey) ?? <String>[];
+      if (!pendingIds.contains(newRecord.id)) {
+        pendingIds.add(newRecord.id);
+        await prefs.setStringList(_pendingSyncKey, pendingIds);
+      }
+      unawaited(syncPendingRecords());
+    } catch (_) {
+      // The locally saved record remains available if queuing the cloud sync fails.
+    }
+  }
+
+  /// Retries local attendance writes that have not reached Firestore yet.
+  /// Local storage remains the source of truth when Firebase is unavailable.
+  static Future<void> syncPendingRecords() async {
+    try {
+      if (Firebase.apps.isEmpty) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final pendingIds = prefs.getStringList(_pendingSyncKey) ?? <String>[];
+      if (pendingIds.isEmpty) return;
+
+      final rawRecords = prefs.getStringList(_key) ?? <String>[];
+      final recordsById = <String, AttendanceRecord>{};
+      for (final raw in rawRecords) {
+        try {
+          final decoded = jsonDecode(raw);
+          if (decoded is Map<String, dynamic>) {
+            final record = AttendanceRecord.fromJson(decoded);
+            recordsById[record.id] = record;
+          }
+        } catch (_) {}
+      }
+
+      final profile = await loadProfile();
+      final remainingIds = <String>[];
+      for (final id in pendingIds) {
+        final record = recordsById[id];
+        if (record == null) continue;
+        try {
+          final description = record.note.isEmpty
+              ? record.title
+              : '${record.title}: ${record.note}';
+          await FirebaseFirestore.instance.collection('attendance').doc(id).set({
+            'name': profile.name,
+            'address': record.location,
+            'description': description,
+            'datetime': DateFormat('dd MMM yyyy, HH:mm').format(record.createdAt),
+            'type': record.type == 'leave' ? 'permission' : record.type,
+            'created_at': Timestamp.fromDate(record.createdAt),
+          }, SetOptions(merge: true));
+        } catch (_) {
+          remainingIds.add(id);
+        }
+      }
+      await prefs.setStringList(_pendingSyncKey, remainingIds);
+    } catch (_) {
+      // Keep pending ids for the next startup or attendance action.
+    }
   }
 
   /// Enterprise guard logic to enforce daily attendance integrity.
@@ -322,7 +331,7 @@ class AttendanceStore {
     }
 
     records.insert(0, record);
-    await save(records);
+    await _saveAndQueueSync(records, record);
     return AttendanceAddResult.saved;
   }
 
@@ -338,5 +347,6 @@ class AttendanceStore {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_key);
     await prefs.remove(_profileKey);
+    await prefs.remove(_pendingSyncKey);
   }
 }

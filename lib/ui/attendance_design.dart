@@ -1,45 +1,38 @@
 import 'package:flutter/material.dart';
 
-/// Conceptzilla Neo-Fintech & Modern iOS 2025 Theme System
-/// Crisp, sharp, pixel-perfect contrast without blurry fog
+/// Shared green and white Neumorphism design system.
 abstract final class AttendanceColors {
-  // Midnight Deep Dark Space (Solid & Crisp Minimalist)
-  static const page = Color(0xFFE6E6E6);
-  static const darkSurface = Color(0xFF333333);
-  static const darkSurfaceElevated = Color(0xFF333333);
-  static const darkBorder = Color(0x22333333);
+  static const page = Color(0xFFF5F7F5);
+  static const darkSurface = Color(0xFF1B5E3B);
+  static const darkSurfaceElevated = Color(0xFF1B5E3B);
+  static const darkBorder = Color(0x331B5E3B);
 
-  // Soft/White Bottom Canvas
-  static const card = Color(0xFFE6E6E6);
-  static const softSurface = Color(0xFFD9D9D9);
-  static const surfaceBorder = Color(0xFFD0D0D0);
+  static const card = Color(0xFFFFFFFF);
+  static const softSurface = Color(0xFFDDF3E4);
+  static const surfaceBorder = Color(0xFFDDF3E4);
 
-  // Vibrant Neo Accents (Clean Apple/Conceptzilla Blue)
-  static const accent = Color(0xFF333333);
-  static const accentCyan = Color(0xFF333333);
-  static const accentPurple = Color(0xFF333333);
-  static const softAccent = Color(0xFFD9D9D9);
+  static const accent = Color(0xFF2E8B57);
+  static const accentCyan = Color(0xFF2E8B57);
+  static const accentPurple = Color(0xFF2E8B57);
+  static const softAccent = Color(0xFFEEF8F0);
 
-  // Crisp High-Contrast Typography Hierarchy
-  static const text = Color(0xFF171717);
-  static const secondaryText = Color(0xFF333333);
-  static const textMuted = Color(0xFF666666);
+  static const text = Color(0xFF1B5E3B);
+  static const secondaryText = Color(0xFF2E8B57);
+  static const textMuted = Color(0xFF2E8B57);
 
-  // Status Colors
-  static const success = Color(0xFF333333);
-  static const warning = Color(0xFF333333);
-  static const error = Color(0xFF333333);
-  static const divider = Color(0xFFD0D0D0);
+  static const success = Color(0xFF2E8B57);
+  static const warning = Color(0xFF2E8B57);
+  static const error = Color(0xFF1B5E3B);
+  static const divider = Color(0xFFDDF3E4);
 
-  // Ultra-Clean Minimalist Header Gradient (Smooth, crisp, no blur)
   static const LinearGradient neoAuroraGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
-      Color(0xFF333333),
-      Color(0xFF333333),
-      Color(0xFF333333),
-      Color(0xFF333333),
+      Color(0xFF1B5E3B),
+      Color(0xFF2E8B57),
+      Color(0xFF2E8B57),
+      Color(0xFF1B5E3B),
     ],
     stops: [0.0, 0.35, 0.75, 1.0],
   );
@@ -48,9 +41,9 @@ abstract final class AttendanceColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF333333),
-      Color(0xFF333333),
-      Color(0xFF333333),
+      Color(0xFFEEF8F0),
+      Color(0xFFFFFFFF),
+      Color(0xFFDDF3E4),
     ],
   );
 }
@@ -163,10 +156,10 @@ abstract final class AttendanceTheme {
         },
       ),
       colorScheme: const ColorScheme(
-      brightness: Brightness.light,
-        primary: AttendanceColors.text,
+        brightness: Brightness.light,
+        primary: AttendanceColors.accent,
         onPrimary: Colors.white,
-        secondary: AttendanceColors.secondaryText,
+        secondary: AttendanceColors.success,
         onSecondary: Colors.white,
         error: AttendanceColors.error,
         onError: Colors.white,
@@ -174,10 +167,47 @@ abstract final class AttendanceTheme {
         onSurface: AttendanceColors.text,
       ),
       textTheme: attendanceTextTheme,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AttendanceColors.page,
+        foregroundColor: AttendanceColors.text,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AttendanceColors.softSurface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AttendanceRadius.compact),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AttendanceRadius.compact),
+          borderSide: const BorderSide(color: AttendanceColors.surfaceBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AttendanceRadius.compact),
+          borderSide: const BorderSide(color: AttendanceColors.accent, width: 1.5),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: AttendanceColors.card,
+        surfaceTintColor: Colors.white,
+        shadowColor: const Color(0x331B5E3B),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AttendanceRadius.compact),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AttendanceColors.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AttendanceRadius.compact),
+        ),
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AttendanceColors.page,
-          foregroundColor: AttendanceColors.text,
+          backgroundColor: AttendanceColors.accent,
+          foregroundColor: Colors.white,
           elevation: 2,
           shadowColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -201,7 +231,7 @@ class ConceptzillaAsterisk extends StatelessWidget {
   const ConceptzillaAsterisk({
     super.key,
     this.size = 56,
-    this.color = Colors.black,
+    this.color = AttendanceColors.text,
   });
 
   @override
@@ -282,7 +312,7 @@ class AttendanceCard extends StatelessWidget {
             (borderColor == null ? null : Border.all(color: borderColor!)),
         boxShadow: shadows ?? const [
           BoxShadow(color: Colors.white, blurRadius: 10, offset: Offset(-4, -4)),
-          BoxShadow(color: Color(0xFFBEBEBE), blurRadius: 10, offset: Offset(4, 4)),
+          BoxShadow(color: Color(0x331B5E3B), blurRadius: 10, offset: Offset(4, 4)),
         ],
       ),
       child: child,
@@ -323,7 +353,7 @@ class AttendancePrimaryButton extends StatelessWidget {
           backgroundColor: bg,
           foregroundColor: fg,
           elevation: 2,
-          shadowColor: const Color(0xFFBEBEBE),
+          shadowColor: const Color(0x331B5E3B),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AttendanceRadius.pill),
           ),
@@ -420,7 +450,7 @@ class AttendanceBottomNavigation extends StatelessWidget {
         border: Border.all(color: AttendanceColors.surfaceBorder, width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF333333).withValues(alpha: 0.12),
+            color: const Color(0x331B5E3B),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),

@@ -20,6 +20,8 @@ class MainNavigationShell extends StatefulWidget {
 class _MainNavigationShellState extends State<MainNavigationShell>
     with SingleTickerProviderStateMixin {
   late int _currentIndex;
+  int _homeRefreshKey = 0;
+  int _historyRefreshKey = 0;
   late final AnimationController _navEntryController;
   late final Animation<double> _navFade;
   late final Animation<Offset> _navSlide;
@@ -61,18 +63,29 @@ class _MainNavigationShellState extends State<MainNavigationShell>
         context,
         SmoothPageRoute(
             page: const AttendScreen(action: AttendanceAction.checkIn)),
-      );
+      ).then((_) {
+        if (mounted) {
+          setState(() {
+            _homeRefreshKey++;
+            _historyRefreshKey++;
+          });
+        }
+      });
       return;
     }
-    setState(() => _currentIndex = index);
+    setState(() {
+      _currentIndex = index;
+      if (index == 0) _homeRefreshKey++;
+      if (index == 2) _historyRefreshKey++;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final screens = [
-      const HomeScreenContent(),
+      HomeScreenContent(key: ValueKey(_homeRefreshKey)),
       const SizedBox.shrink(), // Placeholder for Scan trigger
-      const AttendanceHistoryScreen(),
+      AttendanceHistoryScreen(key: ValueKey(_historyRefreshKey)),
       const AbsentContent(),
       const ProfileScreen(),
     ];

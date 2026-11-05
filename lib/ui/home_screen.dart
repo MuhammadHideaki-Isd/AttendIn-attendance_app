@@ -61,17 +61,29 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     }
   }
 
-  void _openAttendance(AttendanceAction action) {
-    Navigator.push(
+  Future<void> _openAttendance(AttendanceAction action) async {
+    final record = await Navigator.push<AttendanceRecord>(
       context,
       SmoothPageRoute(page: AttendScreen(action: action)),
-    ).then((_) => _loadData());
+    );
+    if (!mounted) return;
+
+    if (record != null) {
+      setState(() {
+        _records = [record, ..._records.where((item) => item.id != record.id)]
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      });
+    }
+    await _loadData();
+    if (record != null && mounted && !_records.any((item) => item.id == record.id)) {
+      setState(() => _records = [record, ..._records]);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final todayRecords = _records.where((r) => r.createdAt.year == now.year && r.createdAt.month == now.month && r.createdAt.day == now.day).toList();
+    final todayRecords = _records.where((r) => DateUtils.isSameDay(r.createdAt, now)).toList();
     final checkIns = todayRecords.where((r) => r.type == 'check_in');
     final checkOuts = todayRecords.where((r) => r.type == 'check_out');
     final checkInTime = checkIns.isEmpty ? '--:--' : DateFormat('HH:mm').format(checkIns.first.createdAt);
@@ -81,28 +93,32 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     return SafeArea(bottom: false, child: SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 116),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('ATTENDANCE', style: TextStyle(color: AttendanceColors.secondaryText, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.4)),
-            const SizedBox(height: 8),
-            Text('Welcome, ${userName.split(' ').first}', style: const TextStyle(color: AttendanceColors.text, fontSize: 27, fontWeight: FontWeight.w800, letterSpacing: -0.6)),
-            const SizedBox(height: 4),
-            Text(DateFormat('EEEE, d MMMM yyyy').format(now), style: const TextStyle(color: AttendanceColors.secondaryText, fontSize: 14)),
-          ])),
-          CircleAvatar(radius: 25, backgroundColor: AttendanceColors.softSurface, child: _profile != null && _profile!.photoBase64.isNotEmpty ? ClipOval(child: Image.memory(base64Decode(_profile!.photoBase64), width: 50, height: 50, fit: BoxFit.cover)) : const Icon(Icons.person_outline_rounded, color: AttendanceColors.text)),
-        ]),
+        AttendanceCard(
+          color: AttendanceColors.softAccent,
+          padding: const EdgeInsets.all(18),
+          child: Row(children: [
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('ATTENDANCE', style: TextStyle(color: AttendanceColors.accent, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.4)),
+              const SizedBox(height: 8),
+              Text('Welcome, ${userName.split(' ').first}', style: const TextStyle(color: AttendanceColors.text, fontSize: 27, fontWeight: FontWeight.w800, letterSpacing: -0.6)),
+              const SizedBox(height: 4),
+              Text(DateFormat('EEEE, d MMMM yyyy').format(now), style: const TextStyle(color: AttendanceColors.secondaryText, fontSize: 14)),
+            ])),
+            CircleAvatar(radius: 25, backgroundColor: Colors.white, child: _profile != null && _profile!.photoBase64.isNotEmpty ? ClipOval(child: Image.memory(base64Decode(_profile!.photoBase64), width: 50, height: 50, fit: BoxFit.cover)) : const Icon(Icons.person_outline_rounded, color: AttendanceColors.text)),
+          ]),
+        ),
         const SizedBox(height: 24),
         AttendanceCard(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Today’s attendance', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+          const Text("Today's attendance", style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
           const SizedBox(height: 16),
           Row(children: [Expanded(child: _buildTimeSummary('CHECK IN', checkInTime, Icons.login_rounded)), const SizedBox(width: 12), Expanded(child: _buildTimeSummary('CHECK OUT', checkOutTime, Icons.logout_rounded))]),
         ])),
         const SizedBox(height: 24),
         const Text('Attendance actions', style: AttendanceTypography.sectionTitle),
         const SizedBox(height: 14),
-        Row(children: [Expanded(child: _buildActionTile(icon: Icons.login_rounded, label: 'CHECK IN', accent: AttendanceColors.text, onTap: () => _openAttendance(AttendanceAction.checkIn))), const SizedBox(width: 10), Expanded(child: _buildActionTile(icon: Icons.logout_rounded, label: 'CHECK OUT', accent: AttendanceColors.text, onTap: () => _openAttendance(AttendanceAction.checkOut)))]),
+        Row(children: [Expanded(child: _buildActionTile(icon: Icons.login_rounded, label: 'CHECK IN', accent: AttendanceColors.accent, onTap: () => _openAttendance(AttendanceAction.checkIn))), const SizedBox(width: 10), Expanded(child: _buildActionTile(icon: Icons.logout_rounded, label: 'CHECK OUT', accent: AttendanceColors.accent, onTap: () => _openAttendance(AttendanceAction.checkOut)))]),
         const SizedBox(height: 10),
-        Row(children: [Expanded(child: _buildActionTile(icon: Icons.free_breakfast_rounded, label: 'BREAK', accent: AttendanceColors.text, onTap: () => _openAttendance(AttendanceAction.breakAction))), const SizedBox(width: 10), Expanded(child: _buildActionTile(icon: Icons.more_time_rounded, label: 'OVERTIME', accent: AttendanceColors.text, onTap: () => _openAttendance(AttendanceAction.overtime)))]),
+        Row(children: [Expanded(child: _buildActionTile(icon: Icons.free_breakfast_rounded, label: 'BREAK', accent: AttendanceColors.accent, onTap: () => _openAttendance(AttendanceAction.breakAction))), const SizedBox(width: 10), Expanded(child: _buildActionTile(icon: Icons.more_time_rounded, label: 'OVERTIME', accent: AttendanceColors.accent, onTap: () => _openAttendance(AttendanceAction.overtime)))]),
         const SizedBox(height: 24),
         Row(children: [Expanded(child: _buildDestinationCard(context, 'Leave request', 'Send a leave or permission request', Icons.event_note_rounded, const AbsentScreen())), const SizedBox(width: 12), Expanded(child: _buildDestinationCard(context, 'History', 'Review your attendance records', Icons.history_rounded, const AttendanceHistoryScreen()))]),
         const SizedBox(height: 28),
@@ -118,7 +134,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
 
   Widget _buildTimeSummary(String label, String time, IconData icon) => Container(
     padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: AttendanceColors.page, borderRadius: BorderRadius.circular(14), boxShadow: const [BoxShadow(color: Colors.white, blurRadius: 7, offset: Offset(-3, -3)), BoxShadow(color: Color(0xFFBEBEBE), blurRadius: 7, offset: Offset(3, 3))]),
+    decoration: BoxDecoration(color: AttendanceColors.page, borderRadius: BorderRadius.circular(14), boxShadow: const [BoxShadow(color: Colors.white, blurRadius: 7, offset: Offset(-3, -3)), BoxShadow(color: Color(0x331B5E3B), blurRadius: 7, offset: Offset(3, 3))]),
     child: Row(children: [Icon(icon, color: AttendanceColors.secondaryText, size: 19), const SizedBox(width: 9), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: const TextStyle(fontSize: 10, color: AttendanceColors.secondaryText, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(time, style: const TextStyle(fontSize: 18, color: AttendanceColors.text, fontWeight: FontWeight.w800))]))]),
   );
 
@@ -223,7 +239,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
               ),
               const SizedBox(height: 2),
               Text(
-                '${DateFormat('HH:mm').format(item.createdAt)} â€¢ ${item.location}',
+                '${DateFormat('HH:mm').format(item.createdAt)} - ${item.location}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(

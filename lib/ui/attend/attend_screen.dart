@@ -300,7 +300,7 @@ class _AttendScreenState extends State<AttendScreen>
   }
 
   /// Ambil snapshot kecil tiap 5 detik dan minta Gemini mengecek
-  /// apakah wajah asli masih ada di frame â€” indikator realtime.
+  /// apakah wajah asli masih ada di frame sebagai indikator realtime.
   Future<void> _pollLiveFace() async {
     if (!kIsWeb || _isPollingLive || _isVerifying || _isSubmitting) return;
     final controller = _cameraController;
@@ -322,7 +322,7 @@ class _AttendScreenState extends State<AttendScreen>
         setState(() {
           _faceDetected = detected;
           _verificationMessage = detected
-              ? 'Live face detected â€¢ Gemini monitoring frame'
+              ? 'Live face detected - Gemini monitoring frame'
               : 'No face detected in frame.';
         });
       }
@@ -472,7 +472,7 @@ class _AttendScreenState extends State<AttendScreen>
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
-      barrierColor: Colors.black.withValues(alpha: 0.7),
+      barrierColor: AttendanceColors.darkSurface.withValues(alpha: 0.7),
       transitionDuration: const Duration(milliseconds: 350),
       transitionBuilder: (ctx, anim1, anim2, child) {
         final curved = CurvedAnimation(parent: anim1, curve: Curves.easeOutBack);
@@ -498,7 +498,7 @@ class _AttendScreenState extends State<AttendScreen>
                   spreadRadius: 2,
                 ),
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
+                  color: AttendanceColors.darkSurface.withValues(alpha: 0.5),
                   blurRadius: 40,
                   offset: const Offset(0, 20),
                 ),
@@ -709,7 +709,7 @@ class _AttendScreenState extends State<AttendScreen>
         );
 
         detected = result.faceDetected && result.confidence >= 0.35;
-        _matchEngineSource = 'Gemini Vision â€¢ ${result.model}';
+        _matchEngineSource = 'Gemini Vision - ${result.model}';
 
         if (!mounted) return;
         if (!detected) {
@@ -736,7 +736,7 @@ class _AttendScreenState extends State<AttendScreen>
       setState(() {
         _faceDetected = true;
         _faceVerified = true;
-        _verificationMessage = 'Face Verified â€¢ ${(_matchConfidence * 100).toStringAsFixed(0)}%';
+        _verificationMessage = 'Face Verified - ${(_matchConfidence * 100).toStringAsFixed(0)}%';
       });
 
       _successBounceController.forward(from: 0);
@@ -832,7 +832,7 @@ class _AttendScreenState extends State<AttendScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
+                  color: AttendanceColors.darkSurface.withValues(alpha: 0.5),
                   blurRadius: 40,
                   offset: const Offset(0, 20),
                 ),
@@ -1055,7 +1055,7 @@ class _AttendScreenState extends State<AttendScreen>
       setState(() => _isSubmitting = false);
 
       if (result == AttendanceAddResult.saved) {
-        _showSuccessDialog(now);
+        _showSuccessDialog(now, record);
       } else {
         final msg = switch (result) {
           AttendanceAddResult.duplicate => '$_actionTitle already recorded for this session.',
@@ -1088,12 +1088,12 @@ class _AttendScreenState extends State<AttendScreen>
     }
   }
 
-  void _showSuccessDialog(DateTime timestamp) {
+  void _showSuccessDialog(DateTime timestamp, AttendanceRecord record) {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
       barrierLabel: 'Success',
-      barrierColor: Colors.black.withValues(alpha: 0.7),
+      barrierColor: AttendanceColors.darkSurface.withValues(alpha: 0.7),
       transitionDuration: const Duration(milliseconds: 400),
       transitionBuilder: (ctx, anim1, anim2, child) {
         final curved = CurvedAnimation(parent: anim1, curve: Curves.easeOutBack);
@@ -1114,7 +1114,7 @@ class _AttendScreenState extends State<AttendScreen>
             source: _matchEngineSource,
             onClose: () {
               Navigator.pop(ctx);
-              Navigator.pop(context, true);
+              Navigator.pop(context, record);
             },
           ),
         ),
@@ -1370,7 +1370,7 @@ class _AttendScreenState extends State<AttendScreen>
               },
             ),
 
-            // 3. Top info pill â€” face detection status
+            // 3. Top info pill - face detection status
             Positioned(
               top: 16,
               left: 16,
@@ -1395,7 +1395,7 @@ class _AttendScreenState extends State<AttendScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.65),
+        color: AttendanceColors.darkSurface.withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: _faceDetected
@@ -1471,7 +1471,7 @@ class _AttendScreenState extends State<AttendScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.65),
+        color: AttendanceColors.darkSurface.withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -1567,7 +1567,7 @@ class _AttendScreenState extends State<AttendScreen>
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                _faceVerified ? 'Face Verified âœ“' : 'Scan Face',
+                                _faceVerified ? 'Face Verified' : 'Scan Face',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
@@ -1640,8 +1640,8 @@ class _AttendScreenState extends State<AttendScreen>
           // Footer label
           Text(
             kIsWeb
-                ? 'Cloud AI Face Detection â€¢ Gemini Vision'
-                : 'On-Device Face Detection Â· Data stays private',
+                ? 'Cloud AI Face Detection - Gemini Vision'
+                : 'On-Device Face Detection - Data stays private',
             style: TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w600,
@@ -2013,7 +2013,7 @@ class _SuccessAttendanceDialogState extends State<_SuccessAttendanceDialog>
             spreadRadius: 4,
           ),
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
+            color: AttendanceColors.darkSurface.withValues(alpha: 0.5),
             blurRadius: 40,
             offset: const Offset(0, 20),
           ),
@@ -2091,7 +2091,7 @@ class _SuccessAttendanceDialogState extends State<_SuccessAttendanceDialog>
           ),
           const SizedBox(height: 8),
           Text(
-            DateFormat('EEEE, d MMMM yyyy â€¢ HH:mm:ss').format(widget.timestamp),
+            DateFormat('EEEE, d MMMM yyyy - HH:mm:ss').format(widget.timestamp),
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.6),

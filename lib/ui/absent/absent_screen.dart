@@ -157,7 +157,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
       status: 'Submitted',
       type: 'leave',
       createdAt: now,
-      location: 'Online Ã¢â‚¬Â¢ ${profile.name}',
+      location: 'Online - ${profile.name}',
       note: reason,
     );
 
@@ -208,7 +208,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
+                  color: AttendanceColors.darkSurface.withValues(alpha: 0.4),
                   blurRadius: 24,
                   offset: const Offset(0, 10),
                 ),
@@ -318,7 +318,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.35),
+                        color: AttendanceColors.darkSurface.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(AttendanceRadius.pill),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                       ),

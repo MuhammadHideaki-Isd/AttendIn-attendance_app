@@ -217,7 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.35),
+                              color: AttendanceColors.darkSurface.withValues(alpha: 0.35),
                               borderRadius:
                                   BorderRadius.circular(AttendanceRadius.pill),
                               border: Border.all(
@@ -290,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 Border.all(color: Colors.white, width: 3.5),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.5),
+                                color: AttendanceColors.darkSurface.withValues(alpha: 0.5),
                                 blurRadius: 28,
                                 offset: const Offset(0, 12),
                               ),
@@ -402,7 +402,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               top: Radius.circular(36)),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
+                              color: AttendanceColors.darkSurface.withValues(alpha: 0.08),
                               blurRadius: 20,
                               offset: const Offset(0, -4),
                             ),
