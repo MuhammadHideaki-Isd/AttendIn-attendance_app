@@ -15,8 +15,15 @@ Future<void> main() async {
   // A Firebase web app must be registered separately and configured with
   // FirebaseOptions; this project does not have those web options yet.
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-    await Firebase.initializeApp();
-    unawaited(AttendanceStore.syncPendingRecords());
+    try {
+      if (Firebase.apps.isEmpty) await Firebase.initializeApp();
+      unawaited(AttendanceStore.syncPendingRecords());
+    } catch (e, stackTrace) {
+      // The app can still use its local attendance store while Firebase is
+      // unavailable. Pending records will be retried on a later launch.
+      debugPrint('Firebase initialization failed: $e');
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 
   runApp(const AttendanceApp());

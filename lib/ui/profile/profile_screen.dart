@@ -130,13 +130,13 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     final profile = UserProfile(
       name: _nameController.text.trim().isEmpty
-          ? 'Prinz Tsabio'
+          ? 'Hideaki Isdianto'
           : _nameController.text.trim(),
       employeeId: _idController.text.trim().isEmpty
           ? '8152'
           : _idController.text.trim(),
       role: _roleController.text.trim().isEmpty
-          ? 'Mobile Architect'
+          ? 'Cybersecurity Analyst Senior'
           : _roleController.text.trim(),
       department: _deptController.text.trim().isEmpty
           ? 'Engineering'
@@ -440,7 +440,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           style: TextStyle(
                                             color: AttendanceColors
                                                 .secondaryText,
-                                            fontSize: 12,
+                                            fontSize: 13,
                                             fontWeight: FontWeight.w800,
                                             letterSpacing: 1.2,
                                           ),

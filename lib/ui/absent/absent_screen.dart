@@ -52,25 +52,25 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
       title: 'Sick Leave',
       subtitle: 'Medical rest or medical recovery',
       icon: Icons.healing_rounded,
-      accent: AttendanceColors.secondaryText,
+      accent: AttendanceColors.accent,
     ),
     _CategoryData(
       title: 'Annual Leave',
       subtitle: 'Personal time off & annual holidays',
       icon: Icons.beach_access_rounded,
-      accent: AttendanceColors.secondaryText,
+      accent: AttendanceColors.accent,
     ),
     _CategoryData(
       title: 'Emergency / Permit',
       subtitle: 'Urgent family or personal affairs',
       icon: Icons.priority_high_rounded,
-      accent: AttendanceColors.secondaryText,
+      accent: AttendanceColors.accent,
     ),
     _CategoryData(
       title: 'Work From Home',
       subtitle: 'Remote work assignment approval',
       icon: Icons.home_work_rounded,
-      accent: AttendanceColors.secondaryText,
+      accent: AttendanceColors.accent,
     ),
   ];
 
@@ -129,7 +129,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
       },
     );
 
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() => _selectedDate = picked);
     }
   }
@@ -147,21 +147,22 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
     }
 
     setState(() => _isSubmitting = true);
-    final now = DateTime.now();
-    final profile = await AttendanceStore.loadProfile();
-    final formattedDate = DateFormat('dd MMM yyyy').format(_selectedDate);
-
-    final record = AttendanceRecord(
-      id: now.microsecondsSinceEpoch.toString(),
-      title: '$_selectedType ($formattedDate)',
-      status: 'Submitted',
-      type: 'leave',
-      createdAt: now,
-      location: 'Online - ${profile.name}',
-      note: reason,
-    );
-
     try {
+      final now = DateTime.now();
+      final profile = await AttendanceStore.loadProfile();
+      if (!mounted) return;
+      final formattedDate = DateFormat('dd MMM yyyy').format(_selectedDate);
+
+      final record = AttendanceRecord(
+        id: now.microsecondsSinceEpoch.toString(),
+        title: '$_selectedType ($formattedDate)',
+        status: 'Submitted',
+        type: 'leave',
+        createdAt: now,
+        location: 'Online - ${profile.name}',
+        note: reason,
+        requestedDate: DateFormat('dd/MM/yyyy').format(_selectedDate),
+      );
       await AttendanceStore.add(record);
       if (!mounted) return;
       setState(() {
@@ -332,7 +333,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
-                              fontSize: 12,
+                              fontSize: 13,
                               letterSpacing: 1.1,
                             ),
                           ),
@@ -352,7 +353,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                             width: 6,
                             height: 6,
                             decoration: const BoxDecoration(
-                              color: AttendanceColors.secondaryText,
+                              color: AttendanceColors.secondaryTextOnDark,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -361,7 +362,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                             'HR Portal Active',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -391,8 +392,8 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                       'Submit formal leave or WFH notification for swift HR validation.',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                         height: 1.35,
                       ),
                     ),
@@ -424,7 +425,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                   'LEAVE CATEGORY',
                                   style: TextStyle(
                                     color: AttendanceColors.secondaryText,
-                                    fontSize: 12,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1,
                                   ),
@@ -465,7 +466,9 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                                 ),
                                                 child: Icon(
                                                   category.icon,
-                                                  color: isSelected ? category.accent : AttendanceColors.text,
+                                                  color: isSelected
+                                                      ? AttendanceColors.secondaryTextOnDark
+                                                      : AttendanceColors.text,
                                                   size: 21,
                                                 ),
                                               ),
@@ -479,16 +482,16 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                                       style: TextStyle(
                                                         color: isSelected ? Colors.white : AttendanceColors.text,
                                                         fontWeight: FontWeight.w800,
-                                                        fontSize: 14,
+                                                        fontSize: 15,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 2),
                                                     Text(
                                                       category.subtitle,
                                                       style: TextStyle(
-                                                        color: isSelected ? Colors.white.withValues(alpha: 0.65) : AttendanceColors.textMuted,
-                                                        fontWeight: FontWeight.w500,
-                                                        fontSize: 12,
+                                                        color: isSelected ? Colors.white.withValues(alpha: 0.85) : AttendanceColors.textMuted,
+                                                        fontWeight: FontWeight.w600,
+                                                        fontSize: 13,
                                                       ),
                                                     ),
                                                   ],
@@ -533,7 +536,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                   'EFFECTIVE DATE',
                                   style: TextStyle(
                                     color: AttendanceColors.secondaryText,
-                                    fontSize: 12,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1,
                                   ),
@@ -574,8 +577,8 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                             'Selected Date',
                                             style: TextStyle(
                                               color: AttendanceColors.textMuted,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
                                             ),
                                           ),
                                           const SizedBox(height: 2),
@@ -583,7 +586,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                             formattedDate,
                                             style: const TextStyle(
                                               color: AttendanceColors.text,
-                                              fontSize: 14,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.w800,
                                             ),
                                           ),
@@ -610,7 +613,7 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                                   'REASON & JUSTIFICATION',
                                   style: TextStyle(
                                     color: AttendanceColors.secondaryText,
-                                    fontSize: 12,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1,
                                   ),
@@ -628,13 +631,13 @@ class _AbsentContentState extends State<AbsentContent> with SingleTickerProvider
                               child: TextField(
                                 controller: _reasonController,
                                 maxLines: 4,
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                                 decoration: const InputDecoration(
                                   hintText: 'Detail your reason, hospital notes, or work delivery plan...',
                                   hintStyle: TextStyle(
                                     color: AttendanceColors.textMuted,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.all(18),

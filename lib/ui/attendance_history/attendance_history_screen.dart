@@ -105,7 +105,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                         style: TextStyle(
                           color: statusColor,
                           fontWeight: FontWeight.w600,
-                          fontSize: 12,
+                          fontSize: 13,
                         ),
                       ),
                     ],
@@ -149,7 +149,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
               child: Text(
                 'ID: $docId',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: AttendanceColors.textMuted,
                 ),
               ),

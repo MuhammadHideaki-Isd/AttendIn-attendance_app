@@ -55,9 +55,9 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      name: json['name']?.toString() ?? 'Prinz Tsabio',
+      name: json['name']?.toString() ?? 'Hideaki Isdianto',
       employeeId: json['employeeId']?.toString() ?? '8152',
-      role: json['role']?.toString() ?? 'Lead Mobile Architect',
+      role: json['role']?.toString() ?? 'Cybersecurity Analyst Senior',
       department: json['department']?.toString() ?? 'Engineering',
       photoBase64: json['photoBase64']?.toString() ?? '',
     );
@@ -72,6 +72,9 @@ class AttendanceRecord {
   final String type;
   final DateTime createdAt;
   final String location;
+  final String? requestedDate;
+  final double? latitude;
+  final double? longitude;
   final String note;
   final double biometricConfidence;
   final String? verificationBadge;
@@ -84,6 +87,9 @@ class AttendanceRecord {
     required this.createdAt,
     required this.location,
     required this.note,
+    this.requestedDate,
+    this.latitude,
+    this.longitude,
     this.biometricConfidence = 0.984,
     this.verificationBadge = 'Biometric Verified',
   });
@@ -95,6 +101,9 @@ class AttendanceRecord {
     'type': type,
     'createdAt': createdAt.toIso8601String(),
     'location': location,
+    'requestedDate': requestedDate,
+    'latitude': latitude,
+    'longitude': longitude,
     'note': note,
     'biometricConfidence': biometricConfidence,
     'verificationBadge': verificationBadge,
@@ -116,6 +125,9 @@ class AttendanceRecord {
       type: json['type']?.toString() ?? 'check_in',
       createdAt: createdAt,
       location: json['location']?.toString() ?? 'Location unavailable',
+      requestedDate: json['requestedDate']?.toString(),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
       note: json['note']?.toString() ?? '',
       biometricConfidence: (json['biometricConfidence'] as num?)?.toDouble() ?? 0.98,
       verificationBadge: json['verificationBadge']?.toString() ?? 'Biometric Verified',
@@ -136,9 +148,9 @@ class AttendanceStore {
     final raw = prefs.getString(_profileKey);
     if (raw == null || raw.isEmpty) {
       return const UserProfile(
-        name: 'Prinz Tsabio',
+        name: 'Hideaki Isdianto',
         employeeId: '8152',
-        role: 'Senior Mobile Engineer',
+        role: 'Cybersecurity Analyst Senior',
         department: 'Product & Tech',
         photoBase64: '',
       );
@@ -149,17 +161,17 @@ class AttendanceStore {
         return UserProfile.fromJson(decoded);
       }
       return const UserProfile(
-        name: 'Prinz Tsabio',
+        name: 'Hideaki Isdianto',
         employeeId: '8152',
-        role: 'Senior Mobile Engineer',
+        role: 'Cybersecurity Analyst Senior',
         department: 'Product & Tech',
         photoBase64: '',
       );
     } catch (_) {
       return const UserProfile(
-        name: 'Prinz Tsabio',
+        name: 'Hideaki Isdianto',
         employeeId: '8152',
-        role: 'Senior Mobile Engineer',
+        role: 'Cybersecurity Analyst Senior',
         department: 'Product & Tech',
         photoBase64: '',
       );
@@ -254,16 +266,21 @@ class AttendanceStore {
         final record = recordsById[id];
         if (record == null) continue;
         try {
-          final description = record.note.isEmpty
-              ? record.title
-              : '${record.title}: ${record.note}';
+          final isPermission = record.type == 'leave';
+          final description = isPermission
+              ? (record.note.isEmpty ? record.title : record.note)
+              : record.status;
           await FirebaseFirestore.instance.collection('attendance').doc(id).set({
             'name': profile.name,
-            'address': record.location,
+            'address': isPermission ? '-' : record.location,
             'description': description,
-            'datetime': DateFormat('dd MMM yyyy, HH:mm').format(record.createdAt),
-            'type': record.type == 'leave' ? 'permission' : record.type,
+            'datetime': isPermission && record.requestedDate != null
+                ? '${record.requestedDate} - ${record.requestedDate}'
+                : DateFormat('dd MMM yyyy, HH:mm').format(record.createdAt),
+            'type': isPermission ? 'permission' : 'attendance',
             'created_at': Timestamp.fromDate(record.createdAt),
+            if (record.latitude != null) 'latitude': record.latitude,
+            if (record.longitude != null) 'longitude': record.longitude,
           }, SetOptions(merge: true));
         } catch (_) {
           remainingIds.add(id);

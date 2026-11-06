@@ -11,16 +11,17 @@ abstract final class AttendanceColors {
   static const softSurface = Color(0xFFDDF3E4);
   static const surfaceBorder = Color(0xFFDDF3E4);
 
-  static const accent = Color(0xFF2E8B57);
-  static const accentCyan = Color(0xFF2E8B57);
-  static const accentPurple = Color(0xFF2E8B57);
+  static const accent = Color(0xFF245F3D);
+  static const accentCyan = Color(0xFFB8E6C6);
+  static const accentPurple = Color(0xFF245F3D);
   static const softAccent = Color(0xFFEEF8F0);
 
   static const text = Color(0xFF1B5E3B);
-  static const secondaryText = Color(0xFF2E8B57);
-  static const textMuted = Color(0xFF2E8B57);
+  static const secondaryText = Color(0xFF285F40);
+  static const secondaryTextOnDark = Color(0xFFB8E6C6);
+  static const textMuted = Color(0xFF285F40);
 
-  static const success = Color(0xFF2E8B57);
+  static const success = Color(0xFF245F3D);
   static const warning = Color(0xFF2E8B57);
   static const error = Color(0xFF1B5E3B);
   static const divider = Color(0xFFDDF3E4);
@@ -71,29 +72,29 @@ abstract final class AttendanceTypography {
     letterSpacing: -0.6,
   );
   static const sectionTitle = TextStyle(
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: FontWeight.w800,
     letterSpacing: -0.3,
   );
   static const cardTitle = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w700,
+    fontSize: 17,
+    fontWeight: FontWeight.w800,
   );
   static const body = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
   );
   static const caption = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
   );
   static const buttonLabel = TextStyle(
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.2,
   );
   static const navigationLabel = TextStyle(
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: FontWeight.w700,
   );
 }
@@ -497,7 +498,7 @@ class AttendanceBottomNavigation extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
-                        fontSize: 12,
+                        fontSize: 13,
                         letterSpacing: -0.2,
                       ),
                     ),
@@ -554,8 +555,8 @@ class AttendanceSectionHeading extends StatelessWidget {
                 trailing!,
                 style: const TextStyle(
                   color: AttendanceColors.secondaryText,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),

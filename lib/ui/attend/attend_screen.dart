@@ -61,11 +61,14 @@ class _AttendScreenState extends State<AttendScreen>
   bool _isDetecting = false;
   bool _isPollingLive = false;
   bool _isSubmitting = false;
+  String strStatus = '';
   Timer? _livePollTimer;
 
   double _matchConfidence = 0.0;
   String _matchEngineSource = kIsWeb ? 'Gemini Vision API' : 'ML Kit Face Detection';
   String _locationName = 'Acquiring GPS coordinates...';
+  double? _latitude;
+  double? _longitude;
   String _verificationMessage = 'Position your face in front of the lens';
 
   @override
@@ -450,6 +453,8 @@ class _AttendScreenState extends State<AttendScreen>
 
       if (!mounted) return;
       setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
         _locationName = placeName.isNotEmpty
             ? placeName
             : 'Lat: ${position.latitude.toStringAsFixed(4)}, Lon: ${position.longitude.toStringAsFixed(4)}';
@@ -490,10 +495,10 @@ class _AttendScreenState extends State<AttendScreen>
             decoration: BoxDecoration(
               color: AttendanceColors.softSurface,
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: AttendanceColors.secondaryText.withValues(alpha: 0.35), width: 1.5),
+              border: Border.all(color: AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.35), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: AttendanceColors.secondaryText.withValues(alpha: 0.08),
+                  color: AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.08),
                   blurRadius: 60,
                   spreadRadius: 2,
                 ),
@@ -522,13 +527,13 @@ class _AttendScreenState extends State<AttendScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          AttendanceColors.secondaryText.withValues(alpha: 0.2),
-                          AttendanceColors.secondaryText.withValues(alpha: 0.1),
+                          AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.2),
+                          AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.1),
                         ],
                       ),
-                      border: Border.all(color: AttendanceColors.secondaryText.withValues(alpha: 0.6), width: 2.5),
+                      border: Border.all(color: AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.6), width: 2.5),
                     ),
-                    child: const Icon(Icons.face_retouching_off_rounded, color: AttendanceColors.secondaryText, size: 40),
+                    child: const Icon(Icons.face_retouching_off_rounded, color: AttendanceColors.secondaryTextOnDark, size: 40),
                   ),
                 ),
                 const SizedBox(height: 22),
@@ -591,15 +596,15 @@ class _AttendScreenState extends State<AttendScreen>
   Widget _buildTipRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AttendanceColors.secondaryText.withValues(alpha: 0.8)),
+        Icon(icon, size: 18, color: AttendanceColors.secondaryTextOnDark),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.65),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -878,7 +883,7 @@ class _AttendScreenState extends State<AttendScreen>
                   'Deteksi wajah di web menggunakan AI Gemini. Tempel API key kamu (diawali "AIza...") untuk mengaktifkan scan wajah. Key disimpan hanya di perangkat ini.',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.65),
-                    fontSize: 12.5,
+                    fontSize: 13.5,
                     height: 1.5,
                   ),
                 ),
@@ -1012,6 +1017,23 @@ class _AttendScreenState extends State<AttendScreen>
     }
   }
 
+  /// Preserves the supplied attendance status rules. At exactly 18:00 the
+  /// executable conditions classify attendance as Leave.
+  void setStatusAbsen({DateTime? at}) {
+    final timestamp = at ?? DateTime.now();
+    final dateHours = timestamp.hour;
+    final dateMinutes = timestamp.minute;
+
+    if (dateHours < 8 || (dateHours == 8 && dateMinutes <= 30)) {
+      strStatus = 'Attend';
+    } else if ((dateHours > 8 && dateHours < 18) ||
+        (dateHours == 8 && dateMinutes >= 31)) {
+      strStatus = 'Late';
+    } else {
+      strStatus = 'Leave';
+    }
+  }
+
   IconData get _actionIcon {
     switch (widget.action) {
       case AttendanceAction.checkIn:
@@ -1026,6 +1048,7 @@ class _AttendScreenState extends State<AttendScreen>
   }
 
   Future<void> _submitAttendance() async {
+    if (_isSubmitting) return;
     if (!_faceVerified) {
       _showNoFaceModal(
         message:
@@ -1037,14 +1060,17 @@ class _AttendScreenState extends State<AttendScreen>
     setState(() => _isSubmitting = true);
 
     final now = DateTime.now();
+    if (widget.action == AttendanceAction.checkIn) setStatusAbsen(at: now);
     final record = AttendanceRecord(
       id: now.microsecondsSinceEpoch.toString(),
       title: _actionTitle,
-      status: widget.action == AttendanceAction.checkIn ? 'On Time' : 'Completed',
+      status: widget.action == AttendanceAction.checkIn ? strStatus : 'Completed',
       type: _actionType,
       createdAt: now,
       location: _locationName,
       note: 'Face scan verified via $_matchEngineSource',
+      latitude: _latitude,
+      longitude: _longitude,
       biometricConfidence: _matchConfidence,
       verificationBadge: 'Face Verified',
     );
@@ -1188,7 +1214,7 @@ class _AttendScreenState extends State<AttendScreen>
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 12,
+                                    fontSize: 13,
                                     letterSpacing: 1.0,
                                   ),
                                 ),
@@ -1222,7 +1248,7 @@ class _AttendScreenState extends State<AttendScreen>
                             DateFormat('HH:mm:ss').format(DateTime.now()),
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 12,
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
                               fontFeatures: const [FontFeature.tabularFigures()],
                             ),
@@ -1237,9 +1263,9 @@ class _AttendScreenState extends State<AttendScreen>
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.55),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -1431,8 +1457,10 @@ class _AttendScreenState extends State<AttendScreen>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: _faceDetected ? AttendanceColors.success : Colors.white,
-                    fontSize: 12,
+                    color: _faceDetected
+                        ? AttendanceColors.secondaryTextOnDark
+                        : Colors.white,
+                    fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1440,9 +1468,9 @@ class _AttendScreenState extends State<AttendScreen>
                   Text(
                     'via $_matchEngineSource',
                     style: TextStyle(
-                      color: AttendanceColors.success.withValues(alpha: 0.8),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
+                      color: AttendanceColors.secondaryTextOnDark,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
               ],
@@ -1505,9 +1533,9 @@ class _AttendScreenState extends State<AttendScreen>
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: _faceDetected
-                    ? AttendanceColors.success
-                    : Colors.white.withValues(alpha: 0.8),
-                fontSize: 11.5,
+                    ? AttendanceColors.secondaryTextOnDark
+                    : Colors.white,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1588,20 +1616,26 @@ class _AttendScreenState extends State<AttendScreen>
           const SizedBox(height: 10),
 
           // Confirm submit button
-          AnimatedOpacity(
-            opacity: _faceVerified ? 1.0 : 0.4,
-            duration: const Duration(milliseconds: 300),
-            child: Material(
+          Material(
               color: _faceVerified
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : Colors.white.withValues(alpha: 0.05),
+                  ? AttendanceColors.secondaryTextOnDark
+                  : Colors.white,
               borderRadius: BorderRadius.circular(20),
+              elevation: 3,
+              shadowColor: Colors.black.withValues(alpha: 0.35),
               child: InkWell(
                 onTap: _faceVerified ? _submitAttendance : null,
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AttendanceColors.secondaryTextOnDark,
+                      width: 2,
+                    ),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1609,13 +1643,16 @@ class _AttendScreenState extends State<AttendScreen>
                         const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AttendanceColors.text,
+                          ),
                         )
                       else
                         Icon(
                           _actionIcon,
                           size: 18,
-                          color: _faceVerified ? Colors.white : Colors.white.withValues(alpha: 0.4),
+                          color: AttendanceColors.text,
                         ),
                       const SizedBox(width: 10),
                       Text(
@@ -1623,9 +1660,9 @@ class _AttendScreenState extends State<AttendScreen>
                             ? 'Recording...'
                             : (_faceVerified ? 'Confirm & Record $_actionTitle' : 'Verify Face First'),
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: _faceVerified ? Colors.white : Colors.white.withValues(alpha: 0.4),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AttendanceColors.text,
                         ),
                       ),
                     ],
@@ -1633,7 +1670,6 @@ class _AttendScreenState extends State<AttendScreen>
                 ),
               ),
             ),
-          ),
 
           const SizedBox(height: 8),
 
@@ -1643,9 +1679,9 @@ class _AttendScreenState extends State<AttendScreen>
                 ? 'Cloud AI Face Detection - Gemini Vision'
                 : 'On-Device Face Detection - Data stays private',
             style: TextStyle(
-              fontSize: 10.5,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withValues(alpha: 0.85),
               letterSpacing: 0.3,
             ),
           ),
@@ -1691,8 +1727,8 @@ class _PremiumScanOverlayPainter extends CustomPainter {
 
     // === Main frame border ===
     final Color frameColor = verified
-        ? AttendanceColors.secondaryText
-        : (isScanning ? AttendanceColors.secondaryText : Colors.white.withValues(alpha: 0.25));
+        ? AttendanceColors.secondaryTextOnDark
+        : (isScanning ? AttendanceColors.secondaryTextOnDark : Colors.white.withValues(alpha: 0.65));
     final framePaint = Paint()
       ..color = frameColor.withValues(alpha: verified ? 0.8 : (isScanning ? 0.6 : 0.25))
       ..strokeWidth = verified ? 2.5 : 1.5
@@ -1700,7 +1736,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
     canvas.drawRRect(rrect, framePaint);
 
     // === Corner bracket accents ===
-    final cornerColor = verified ? AttendanceColors.secondaryText : AttendanceColors.secondaryText;
+    final cornerColor = AttendanceColors.secondaryTextOnDark;
     final cornerPaint = Paint()
       ..color = cornerColor
       ..strokeWidth = 3.5
@@ -1732,9 +1768,9 @@ class _PremiumScanOverlayPainter extends CustomPainter {
         ..shader = const LinearGradient(
           colors: [
             Colors.transparent,
-            AttendanceColors.secondaryText,
+            AttendanceColors.secondaryTextOnDark,
             Colors.white,
-            AttendanceColors.secondaryText,
+            AttendanceColors.secondaryTextOnDark,
             Colors.transparent,
           ],
           stops: [0.0, 0.25, 0.5, 0.75, 1.0],
@@ -1750,7 +1786,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
 
       // Soft trailing glow behind the laser
       final scanGlowPaint = Paint()
-        ..color = AttendanceColors.secondaryText.withValues(alpha: 0.22)
+        ..color = AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.35)
         ..strokeWidth = 6.0
         ..style = PaintingStyle.stroke;
 
@@ -1769,8 +1805,8 @@ class _PremiumScanOverlayPainter extends CustomPainter {
 
       final arcPaint = Paint()
         ..color = isScanning
-            ? AttendanceColors.secondaryText.withValues(alpha: 0.8)
-            : AttendanceColors.secondaryText.withValues(alpha: 0.2)
+            ? AttendanceColors.secondaryTextOnDark
+            : AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.5)
         ..strokeWidth = isScanning ? 2.5 : 1.2
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
@@ -1787,7 +1823,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
           pi,
           pi * 0.5,
           false,
-          arcPaint..color = AttendanceColors.secondaryText.withValues(alpha: 0.45),
+          arcPaint..color = AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.65),
         );
       }
       canvas.restore();
@@ -1801,7 +1837,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
         Radius.circular(40 + pulseExpansion),
       );
       final pulsePaint = Paint()
-        ..color = (isScanning ? AttendanceColors.secondaryText : Colors.white)
+        ..color = (isScanning ? AttendanceColors.secondaryTextOnDark : Colors.white)
             .withValues(alpha: (0.12 - pulseValue * 0.08).clamp(0.02, 0.12))
         ..strokeWidth = 1.0
         ..style = PaintingStyle.stroke;
@@ -1811,7 +1847,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
     // === Glow effect during verification ===
     if (glowIntensity > 0 && isScanning) {
       final glowPaint = Paint()
-        ..color = AttendanceColors.secondaryText.withValues(alpha: glowIntensity * 0.15)
+        ..color = AttendanceColors.secondaryTextOnDark.withValues(alpha: glowIntensity * 0.15)
         ..strokeWidth = 3.5
         ..style = PaintingStyle.stroke;
       canvas.drawRRect(rrect.inflate(2), glowPaint);
@@ -1824,7 +1860,7 @@ class _PremiumScanOverlayPainter extends CustomPainter {
         const Radius.circular(43),
       );
       final successPaint = Paint()
-        ..color = AttendanceColors.secondaryText.withValues(alpha: 0.25)
+        ..color = AttendanceColors.secondaryTextOnDark.withValues(alpha: 0.4)
         ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
       canvas.drawRRect(successRRect, successPaint);
@@ -1864,9 +1900,9 @@ class _CameraLoadingIndicator extends StatelessWidget {
         Text(
           'Initializing Camera',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1912,8 +1948,9 @@ class _CameraErrorView extends StatelessWidget {
             message,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 13,
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
               height: 1.4,
             ),
           ),
@@ -2130,7 +2167,7 @@ class _SuccessAttendanceDialogState extends State<_SuccessAttendanceDialog>
             'via ${widget.source}',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.4),
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -2152,7 +2189,7 @@ class _SuccessAttendanceDialogState extends State<_SuccessAttendanceDialog>
                     widget.location,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.65),
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),

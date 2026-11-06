@@ -80,15 +80,26 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     }
   }
 
+  Future<void> _openDestination(Widget screen) async {
+    await Navigator.push(context, SmoothPageRoute(page: screen));
+    if (mounted) await _loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final todayRecords = _records.where((r) => DateUtils.isSameDay(r.createdAt, now)).toList();
+    final todayRecords = _records
+        .where((r) => DateUtils.isSameDay(r.createdAt.toLocal(), now))
+        .toList();
     final checkIns = todayRecords.where((r) => r.type == 'check_in');
     final checkOuts = todayRecords.where((r) => r.type == 'check_out');
-    final checkInTime = checkIns.isEmpty ? '--:--' : DateFormat('HH:mm').format(checkIns.first.createdAt);
-    final checkOutTime = checkOuts.isEmpty ? '--:--' : DateFormat('HH:mm').format(checkOuts.first.createdAt);
-    final userName = _profile?.name ?? 'Prinz Tsabio';
+    final checkInTime = checkIns.isEmpty
+        ? '--:--'
+        : DateFormat('HH:mm').format(checkIns.first.createdAt.toLocal());
+    final checkOutTime = checkOuts.isEmpty
+        ? '--:--'
+        : DateFormat('HH:mm').format(checkOuts.first.createdAt.toLocal());
+    final userName = _profile?.name ?? 'Hideaki Isdianto';
 
     return SafeArea(bottom: false, child: SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 116),
@@ -98,18 +109,18 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           padding: const EdgeInsets.all(18),
           child: Row(children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('ATTENDANCE', style: TextStyle(color: AttendanceColors.accent, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.4)),
+              const Text('ATTENDANCE', style: TextStyle(color: AttendanceColors.accent, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
               const SizedBox(height: 8),
-              Text('Welcome, ${userName.split(' ').first}', style: const TextStyle(color: AttendanceColors.text, fontSize: 27, fontWeight: FontWeight.w800, letterSpacing: -0.6)),
+              Text('Welcome, ${userName.split(' ').first}', style: const TextStyle(color: AttendanceColors.text, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
               const SizedBox(height: 4),
-              Text(DateFormat('EEEE, d MMMM yyyy').format(now), style: const TextStyle(color: AttendanceColors.secondaryText, fontSize: 14)),
+              Text(DateFormat('EEEE, d MMMM yyyy').format(now), style: const TextStyle(color: AttendanceColors.secondaryText, fontSize: 15, fontWeight: FontWeight.w600)),
             ])),
             CircleAvatar(radius: 25, backgroundColor: Colors.white, child: _profile != null && _profile!.photoBase64.isNotEmpty ? ClipOval(child: Image.memory(base64Decode(_profile!.photoBase64), width: 50, height: 50, fit: BoxFit.cover)) : const Icon(Icons.person_outline_rounded, color: AttendanceColors.text)),
           ]),
         ),
         const SizedBox(height: 24),
         AttendanceCard(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text("Today's attendance", style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+          const Text("Today's attendance", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 16),
           Row(children: [Expanded(child: _buildTimeSummary('CHECK IN', checkInTime, Icons.login_rounded)), const SizedBox(width: 12), Expanded(child: _buildTimeSummary('CHECK OUT', checkOutTime, Icons.logout_rounded))]),
         ])),
@@ -135,13 +146,13 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   Widget _buildTimeSummary(String label, String time, IconData icon) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(color: AttendanceColors.page, borderRadius: BorderRadius.circular(14), boxShadow: const [BoxShadow(color: Colors.white, blurRadius: 7, offset: Offset(-3, -3)), BoxShadow(color: Color(0x331B5E3B), blurRadius: 7, offset: Offset(3, 3))]),
-    child: Row(children: [Icon(icon, color: AttendanceColors.secondaryText, size: 19), const SizedBox(width: 9), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: const TextStyle(fontSize: 10, color: AttendanceColors.secondaryText, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(time, style: const TextStyle(fontSize: 18, color: AttendanceColors.text, fontWeight: FontWeight.w800))]))]),
+    child: Row(children: [Icon(icon, color: AttendanceColors.secondaryText, size: 19), const SizedBox(width: 9), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: const TextStyle(fontSize: 12, color: AttendanceColors.secondaryText, fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(time, style: const TextStyle(fontSize: 19, color: AttendanceColors.text, fontWeight: FontWeight.w800))]))]),
   );
 
   Widget _buildDestinationCard(BuildContext context, String title, String subtitle, IconData icon, Widget screen) => InkWell(
     borderRadius: BorderRadius.circular(18),
-    onTap: () => Navigator.push(context, SmoothPageRoute(page: screen)),
-    child: AttendanceCard(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, color: AttendanceColors.text, size: 22), const SizedBox(height: 12), Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)), const SizedBox(height: 5), Text(subtitle, style: const TextStyle(color: AttendanceColors.secondaryText, fontSize: 12, height: 1.35))])),
+    onTap: () => _openDestination(screen),
+    child: AttendanceCard(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, color: AttendanceColors.text, size: 22), const SizedBox(height: 12), Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)), const SizedBox(height: 5), Text(subtitle, style: const TextStyle(color: AttendanceColors.secondaryText, fontSize: 13, fontWeight: FontWeight.w600, height: 1.35))])),
   );
   Widget _buildActionTile({
     required IconData icon,
@@ -186,7 +197,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                 style: const TextStyle(
                   color: AttendanceColors.text,
                   fontWeight: FontWeight.w700,
-                  fontSize: 10,
+                  fontSize: 12,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -239,13 +250,13 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
               ),
               const SizedBox(height: 2),
               Text(
-                '${DateFormat('HH:mm').format(item.createdAt)} - ${item.location}',
+                '${DateFormat('HH:mm').format(item.createdAt.toLocal())} - ${item.location}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AttendanceColors.secondaryText,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -265,7 +276,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             style: TextStyle(
               color: badgeText,
               fontWeight: FontWeight.w800,
-              fontSize: 10.5,
+              fontSize: 12,
               letterSpacing: 0.5,
             ),
           ),
